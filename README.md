@@ -20,7 +20,7 @@ If you don't have `devtools` installed already, install it first.
 install.packages("devtools")
 ```
 
-(BAStag otherwise does not need devtools for normal use.)
+(Rheap otherwise does not need devtools for normal use.)
 
 ## Example
 
