@@ -30,7 +30,7 @@ library(Rheap)
 x <- runif(1000)
 ## Find tenth largest value in x
 heap <- npushpop(maxheap(x[1:10]), x[-(1:10)])
-heap[1]
+head(heap)
 sort(x)[10]
 ```
 
