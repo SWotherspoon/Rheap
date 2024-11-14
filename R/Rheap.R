@@ -29,53 +29,54 @@ maxheap <- function(x = numeric(0)) {
     .Call(C_maxheap, as.numeric(x))
 }
 
-##' Push an element onto a heap
+##' Push one or more elements onto a heap
 ##'
-##' @title Push element onto heap
+##' @title Push elements onto heap
 ##' @param heap Heap object
-##' @param value Numeric value to push
+##' @param values Numeric vector of values to push
 ##' @return Updated heap object
 ##' @export
-push <- function(heap, value) {
+push <- function(heap, values) {
     UseMethod("push")
 }
 
 ##' @rdname push
 ##' @method push minheap
 ##' @export
-push.minheap <- function(heap, value) {
-    .Call(C_push_minheap, heap, as.numeric(value))
+push.minheap <- function(heap, values) {
+    .Call(C_push_minheap, heap, as.numeric(values))
 }
 
 ##' @rdname push
 ##' @method push maxheap
 ##' @export
-push.maxheap <- function(heap, value) {
-    .Call(C_push_maxheap, heap, as.numeric(value))
+push.maxheap <- function(heap, values) {
+    .Call(C_push_maxheap, heap, as.numeric(values))
 }
 
-##' Pop top element from a heap
+##' Pop multiple elements from a heap
 ##'
-##' @title Pop top element from a heap
+##' @title Pop elements from a heap
 ##' @param heap Heap object
-##' @return List containing value and updated heap
+##' @param n Number of elements to pop (default: 1)
+##' @return List containing vector of popped values and updated heap
 ##' @export
-pop <- function(heap) {
+pop <- function(heap, n = 1L) {
     UseMethod("pop")
 }
 
 ##' @rdname pop
 ##' @method pop minheap
 ##' @export
-pop.minheap <- function(heap) {
-    .Call(C_pop_minheap, heap)
+pop.minheap <- function(heap, n = 1L) {
+    .Call(C_pop_minheap, heap, as.integer(n))
 }
 
 ##' @rdname pop
 ##' @method pop maxheap
 ##' @export
-pop.maxheap <- function(heap) {
-    .Call(C_pop_maxheap, heap)
+pop.maxheap <- function(heap, n = 1L) {
+    .Call(C_pop_maxheap, heap, as.integer(n))
 }
 
 ##' Insert element into fixed-size heap

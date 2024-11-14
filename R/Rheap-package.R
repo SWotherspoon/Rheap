@@ -1,11 +1,7 @@
-##' @title R Implementation of Min- and Max-Heaps
-##' @description Provides implementations of min-heap and max-heaps.
-##'
-##' @docType package
-##' @name Rheap
-##' @useDynLib Rheap, .registration = TRUE
+#' @keywords internal
 "_PACKAGE"
 
 ## usethis namespace: start
+##' @useDynLib Rheap, .registration = TRUE
 ## usethis namespace: end
 NULL

@@ -116,103 +116,139 @@ SEXP C_maxheap(SEXP x) {
     return result;
 }
 
-SEXP C_push_minheap(SEXP heap, SEXP value) {
-    double val = asReal(value);
+SEXP C_push_minheap(SEXP heap, SEXP values) {
     R_xlen_t n = XLENGTH(heap);
+    R_xlen_t m = XLENGTH(values);
     
     SEXP result;
-    PROTECT(result = allocVector(REALSXP, n + 1));
+    PROTECT(result = allocVector(REALSXP, n + m));
     double *x = REAL(result);
     
     // Copy existing heap
     memcpy(x, REAL(heap), n * sizeof(double));
-    x[n] = val;
     
-    // Heapify up
-    upheap_min(x, n + 1);
+    // Add new values one by one
+    double *vals = REAL(values);
+    for (R_xlen_t i = 0; i < m; i++) {
+        x[n + i] = vals[i];
+        upheap_min(x, n + i + 1);
+    }
     
     setAttrib(result, R_ClassSymbol, mkString("minheap"));
     UNPROTECT(1);
     return result;
 }
 
-SEXP C_push_maxheap(SEXP heap, SEXP value) {
-    double val = asReal(value);
+SEXP C_push_maxheap(SEXP heap, SEXP values) {
     R_xlen_t n = XLENGTH(heap);
+    R_xlen_t m = XLENGTH(values);
     
     SEXP result;
-    PROTECT(result = allocVector(REALSXP, n + 1));
+    PROTECT(result = allocVector(REALSXP, n + m));
     double *x = REAL(result);
     
     // Copy existing heap
     memcpy(x, REAL(heap), n * sizeof(double));
-    x[n] = val;
     
-    // Heapify up
-    upheap_max(x, n + 1);
+    // Add new values one by one
+    double *vals = REAL(values);
+    for (R_xlen_t i = 0; i < m; i++) {
+        x[n + i] = vals[i];
+        upheap_max(x, n + i + 1);
+    }
     
     setAttrib(result, R_ClassSymbol, mkString("maxheap"));
     UNPROTECT(1);
     return result;
 }
 
-SEXP C_pop_minheap(SEXP heap) {
+SEXP C_pop_minheap(SEXP heap, SEXP count) {
     R_xlen_t n = XLENGTH(heap);
-    if (n == 0) return R_NilValue;
+    R_xlen_t k = asInteger(count);
+    if (n == 0 || k <= 0) return R_NilValue;
+    if (k > n) k = n;
     
-    SEXP result, value, updated_heap;
+    SEXP result, values, updated_heap, names;
     PROTECT(result = allocVector(VECSXP, 2));
-    PROTECT(value = ScalarReal(REAL(heap)[0]));
+    PROTECT(values = allocVector(REALSXP, k));
+    PROTECT(updated_heap = allocVector(REALSXP, n - k));
+    PROTECT(names = allocVector(STRSXP, 2));
     
-    if (n == 1) {
-        PROTECT(updated_heap = allocVector(REALSXP, 0));
-    } else {
-        PROTECT(updated_heap = allocVector(REALSXP, n - 1));
-        double *x = REAL(updated_heap);
+    // Set names for the list elements
+    SET_STRING_ELT(names, 0, mkChar("values"));
+    SET_STRING_ELT(names, 1, mkChar("heap"));
+    setAttrib(result, R_NamesSymbol, names);
+    
+    double *heap_data = REAL(heap);
+    double *val_data = REAL(values);
+    double *new_heap = REAL(updated_heap);
+    
+    // Create working copy of heap
+    double *work_heap = (double *)R_alloc(n, sizeof(double));
+    memcpy(work_heap, heap_data, n * sizeof(double));
+    
+    // Extract k minimum values
+    for (R_xlen_t i = 0; i < k; i++) {
+        val_data[i] = work_heap[0];  // Store minimum
         
-        // Move last element to root and copy rest
-        x[0] = REAL(heap)[n-1];
-        memcpy(x + 1, REAL(heap) + 1, (n - 2) * sizeof(double));
-        
-        // Heapify down
-        dnheap_min(x, 1, n - 1);
+        // Replace root with last element and heapify
+        work_heap[0] = work_heap[n - i - 1];
+        dnheap_min(work_heap, 1, n - i - 1);
     }
     
+    // Copy remaining elements to new heap
+    memcpy(new_heap, work_heap, (n - k) * sizeof(double));
+    
     setAttrib(updated_heap, R_ClassSymbol, mkString("minheap"));
-    SET_VECTOR_ELT(result, 0, value);
+    SET_VECTOR_ELT(result, 0, values);
     SET_VECTOR_ELT(result, 1, updated_heap);
     
-    UNPROTECT(3);
+    UNPROTECT(4);
     return result;
 }
 
-SEXP C_pop_maxheap(SEXP heap) {
+SEXP C_pop_maxheap(SEXP heap, SEXP count) {
     R_xlen_t n = XLENGTH(heap);
-    if (n == 0) return R_NilValue;
+    R_xlen_t k = asInteger(count);
+    if (n == 0 || k <= 0) return R_NilValue;
+    if (k > n) k = n;
     
-    SEXP result, value, updated_heap;
+    SEXP result, values, updated_heap, names;
     PROTECT(result = allocVector(VECSXP, 2));
-    PROTECT(value = ScalarReal(REAL(heap)[0]));
+    PROTECT(values = allocVector(REALSXP, k));
+    PROTECT(updated_heap = allocVector(REALSXP, n - k));
+    PROTECT(names = allocVector(STRSXP, 2));
     
-    if (n == 1) {
-        PROTECT(updated_heap = allocVector(REALSXP, 0));
-    } else {
-        PROTECT(updated_heap = allocVector(REALSXP, n - 1));
-        double *x = REAL(updated_heap);
+    // Set names for the list elements
+    SET_STRING_ELT(names, 0, mkChar("values"));
+    SET_STRING_ELT(names, 1, mkChar("heap"));
+    setAttrib(result, R_NamesSymbol, names);
+    
+    double *heap_data = REAL(heap);
+    double *val_data = REAL(values);
+    double *new_heap = REAL(updated_heap);
+    
+    // Create working copy of heap
+    double *work_heap = (double *)R_alloc(n, sizeof(double));
+    memcpy(work_heap, heap_data, n * sizeof(double));
+    
+    // Extract k maximum values
+    for (R_xlen_t i = 0; i < k; i++) {
+        val_data[i] = work_heap[0];  // Store maximum
         
-        // Move last element to root and copy rest
-        x[0] = REAL(heap)[n-1];
-        memcpy(x + 1, REAL(heap) + 1, (n - 2) * sizeof(double));
-        
-        // Heapify down
-        dnheap_max(x, 1, n - 1);
+        // Replace root with last element and heapify
+        work_heap[0] = work_heap[n - i - 1];
+        dnheap_max(work_heap, 1, n - i - 1);
     }
     
+    // Copy remaining elements to new heap
+    memcpy(new_heap, work_heap, (n - k) * sizeof(double));
+    
     setAttrib(updated_heap, R_ClassSymbol, mkString("maxheap"));
-    SET_VECTOR_ELT(result, 0, value);
+    SET_VECTOR_ELT(result, 0, values);
     SET_VECTOR_ELT(result, 1, updated_heap);
     
-    UNPROTECT(3);
+    UNPROTECT(4);
     return result;
 }
 
@@ -565,8 +601,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_maxheap", (DL_FUNC) &C_maxheap, 1},
     {"C_push_minheap", (DL_FUNC) &C_push_minheap, 2},
     {"C_push_maxheap", (DL_FUNC) &C_push_maxheap, 2},
-    {"C_pop_minheap", (DL_FUNC) &C_pop_minheap, 1},
-    {"C_pop_maxheap", (DL_FUNC) &C_pop_maxheap, 1},
+    {"C_pop_minheap", (DL_FUNC) &C_pop_minheap, 2},
+    {"C_pop_maxheap", (DL_FUNC) &C_pop_maxheap, 2},
     {"C_insert_minheap", (DL_FUNC) &C_insert_minheap, 2},
     {"C_insert_maxheap", (DL_FUNC) &C_insert_maxheap, 2},
     {"C_pushpop_minheap", (DL_FUNC) &C_pushpop_minheap, 2},

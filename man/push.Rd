@@ -4,22 +4,22 @@
 \alias{push}
 \alias{push.minheap}
 \alias{push.maxheap}
-\title{Push element onto heap}
+\title{Push elements onto heap}
 \usage{
-push(heap, value)
+push(heap, values)
 
-\method{push}{minheap}(heap, value)
+\method{push}{minheap}(heap, values)
 
-\method{push}{maxheap}(heap, value)
+\method{push}{maxheap}(heap, values)
 }
 \arguments{
 \item{heap}{Heap object}
 
-\item{value}{Numeric value to push}
+\item{values}{Numeric vector of values to push}
 }
 \value{
 Updated heap object
 }
 \description{
-Push an element onto a heap
+Push one or more elements onto a heap
 }

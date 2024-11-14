@@ -4,20 +4,22 @@
 \alias{pop}
 \alias{pop.minheap}
 \alias{pop.maxheap}
-\title{Pop top element from a heap}
+\title{Pop elements from a heap}
 \usage{
-pop(heap)
+pop(heap, n = 1L)
 
-\method{pop}{minheap}(heap)
+\method{pop}{minheap}(heap, n = 1L)
 
-\method{pop}{maxheap}(heap)
+\method{pop}{maxheap}(heap, n = 1L)
 }
 \arguments{
 \item{heap}{Heap object}
+
+\item{n}{Number of elements to pop (default: 1)}
 }
 \value{
-List containing value and updated heap
+List containing vector of popped values and updated heap
 }
 \description{
-Pop top element from a heap
+Pop multiple elements from a heap
 }
